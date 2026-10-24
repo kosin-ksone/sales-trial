@@ -1112,7 +1112,7 @@ function renderMine(){
 /* ===== แก้ไข / ลบ รายงานที่บันทึกแล้ว (ในเครื่องนี้) ===== */
 function editRecModal(o){   // o={title,sub,fields:[{k,label,val,rows}],thumbs:[],onSave(vals,thumbs),onDelete()}
   var host=document.getElementById('modalHost')||document.body, ov=document.createElement('div'), thumbs=(o.thumbs||[]).slice();
-  ov.style.cssText='position:fixed;inset:0;background:rgba(10,14,25,.55);z-index:9998;display:flex;align-items:flex-end;justify-content:center';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(10,14,25,.55);z-index:10000;display:flex;align-items:flex-end;justify-content:center';
   var e=function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
   var inp='width:100%;box-sizing:border-box;border:1px solid #d6d9e0;border-radius:10px;padding:9px 11px;font:inherit;font-size:14px;margin:3px 0 10px;background:#fff;resize:vertical';
   var bt='flex:1;padding:12px;border-radius:10px;font:inherit;font-size:14px;font-weight:700;cursor:pointer';
@@ -1137,7 +1137,7 @@ function editRecModal(o){   // o={title,sub,fields:[{k,label,val,rows}],thumbs:[
 function ensureIds(){ var a=loadMy(),ch=0; a.forEach(function(x,i){ if(!x.id){ x.id=(x.ts||'r')+'_'+i; ch=1; } }); if(ch) localStorage.setItem(MY_KEY,JSON.stringify(a)); }   // รายงานเก่าที่ยังไม่มีรหัส
 function editMine(id){
   var all=loadMy(), r=all.filter(function(x){return x.id===id&&x.nick===me.nick;})[0]; if(!r) return;
-  editRecModal({title:'แก้ไขรายงาน', sub:r.workDate, thumbs:r.thumbs||[],
+  editRecModal({title:'แก้ไขรายงาน', sub:new Date(r.workDate+'T00:00:00').toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',year:'2-digit'}), thumbs:r.thumbs||[],
     fields:[{k:'hospital',label:'ไปที่ไหน',val:r.hospital},{k:'what',label:'ทำอะไร',val:r.what,rows:2},{k:'detail',label:'รายละเอียด',val:r.detail,rows:4},{k:'help',label:'ปัญหาและแนวทางแก้ไข',val:r.help,rows:2}],
     onSave:function(v,th){ if(!v.hospital){toast('ใส่ ไปที่ไหน ก่อนนะคะ');return false;} var a=loadMy(); a.forEach(function(x){ if(x.id===id&&x.nick===me.nick){ x.hospital=v.hospital; x.what=v.what; x.detail=v.detail; x.help=v.help; x.thumbs=th; x.photoCount=th.length; x.edited=new Date().toISOString(); } }); localStorage.setItem(MY_KEY,JSON.stringify(a)); renderMine(); toast('แก้ไขแล้ว · โหลด PDF/Excel ใหม่ได้เลย'); },
     onDelete:function(){ var a=loadMy().filter(function(x){return !(x.id===id&&x.nick===me.nick);}); localStorage.setItem(MY_KEY,JSON.stringify(a)); renderMine(); toast('ลบแล้ว'); }});
