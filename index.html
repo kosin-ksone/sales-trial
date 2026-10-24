@@ -387,6 +387,7 @@ var IC={
 };
 
 // ---------- LOGIN ----------
+function avNick(n){ n=String(n||'').replace(/\s*\(.*\)$/,''); var f=n.length<=3?13:(n.length<=5?11:9.5); return '<span class="av" style="font-size:'+f+'px">'+n+'</span>'; }   // วงกลม = ชื่อเล่น
 function initials(full){var p=(full||'').split(' ');return (p[0]||'').slice(0,1)+((p[1]||'').slice(0,1));}
 // ---------- น้องทดลองงาน (ยังไม่มีชื่อในรายชื่อ) → เพิ่มชื่อในเครื่อง ต่อท้าย (ทดลองงาน) ----------
 var TRAINEE_KEY='kosintrial_sales_trainees';
@@ -423,7 +424,7 @@ function renderLogin(){
     var list=byReg[reg]; if(!list) return;
     html+='<div class="reg-h">'+reg+' ('+list.length+' คน)</div><div class="namelist">';
     list.forEach(function(s){
-      html+='<button class="namebtn" onclick="pick(\''+s.nick+'\')"><span class="av">'+initials(s.full)+'</span><span class="nm">'+s.full+'<small>('+s.nick+')'+(s.work?' · เขต '+s.work:'')+'</small></span></button>';
+      html+='<button class="namebtn" onclick="pick(\''+s.nick+'\')">'+avNick(s.nick)+'<span class="nm">'+s.full+'<small>('+s.nick+')'+(s.work?' · เขต '+s.work:'')+'</small></span></button>';
     });
     html+='</div>';
   });
@@ -1014,7 +1015,7 @@ function showModal(title,body,buttons){
 }
 
 // ---------- รายงานของฉัน (เก็บสำเนาย่อในเครื่อง · สัปดาห์ จันทร์–อาทิตย์) ----------
-var MY_KEY='kosintrial_sales_reports', SENT_KEY='kosintrial_sales_weeksent', KEEP_THUMB_DAYS=21;
+var MY_KEY='kosintrial_sales_reports', SENT_KEY='kosintrial_sales_weeksent', KEEP_THUMB_DAYS=15;
 var MN_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 var MN_SHORT=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 var DOW_MON=['จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์','อาทิตย์'];
@@ -1101,9 +1102,9 @@ function renderMine(){
     });
     h+='<div class="dayc">'+head+body+'</div>';
   }
-  h+='<div class="btnrow"><button class="send ghost" onclick="printWeeks([mineWeek],\'week\')">'+IC.dl+'PDF · รายงานสัปดาห์นี้</button><button class="send ghost" onclick="printMonth()">'+IC.dl+'PDF · รายงานทั้งเดือน</button></div>'
-    +'<div class="btnrow"><button class="send ghost" onclick="xlWeek()">📊 Excel · รายงานสัปดาห์นี้</button><button class="send ghost" onclick="xlMonth()">📊 Excel · รายงานทั้งเดือน</button></div>';
-  h+='<div style="font-size:11.5px;color:var(--mut);text-align:center;margin:6px 0 4px">แอปนี้แค่บันทึก · โหลดไฟล์แล้วส่งเมลปลายทางของหน่วยงานเอง</div>';
+  h+='<div class="btnrow"><button class="send ghost" onclick="printWeeks([mineWeek],\'week\')">'+IC.dl+'PDF · สัปดาห์นี้</button><button class="send ghost" onclick="printMonth()">'+IC.dl+'PDF · ทั้งเดือน</button></div>'
+    +'<div class="btnrow"><button class="send ghost" onclick="xlWeek()">📊 Excel · สัปดาห์นี้</button><button class="send ghost" onclick="xlMonth()">📊 Excel · ทั้งเดือน</button></div>';
+  h+='<div style="background:var(--amber-bg);color:var(--amber);border-radius:10px;padding:9px 12px;font-size:12px;line-height:1.55;margin:8px 0 4px"><b>⚠️ รายงานเก็บอยู่ในเครื่องนี้เท่านั้น</b> — แอปไม่ได้ส่งให้ใคร<br>• โหลด PDF/Excel แล้ว<b>ส่งเมลจากเมลของตัวเอง ทุกสัปดาห์</b><br>• รูปในแอปเก็บแค่ <b>15 วัน</b> — โหลดก่อนรูปหาย<br>• เก็บไฟล์ที่โหลดไว้ในเครื่อง/อีเมลของตัวเองด้วย</div>';
   document.getElementById('mineBody').innerHTML=h;
 }
 function mineNav(n){ mineWeek=addDays(mineWeek,7*n); renderMine(); window.scrollTo(0,0); }
