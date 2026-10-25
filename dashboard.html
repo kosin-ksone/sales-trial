@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="th"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard รายงานผู้แทน · KOSIN</title>
+<link rel="icon" href="favicon-32.png">
+<style>
+:root{--brand:#0B1F4D;--red:#E30613;--gold:#C9A24A;--gold-bg:#FBF4E3;--bg:#F6F7FA;--line:#E1E5EE;--txt:#1C2333;--mut:#7A8499;
+  --ok:#2E7D4F;--ok-bg:#E3F4EA;--no:#B3261E;--no-bg:#FCEBEA;--late:#A56A00;--late-bg:#FFF2D6}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt);font-family:"Leelawadee UI","Sarabun",Tahoma,sans-serif;font-size:14px}
+button,select,input{font:inherit}
+.top{background:#fff;border-bottom:3px solid var(--red);padding:8px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.top img{height:44px}.top .t{font-weight:800;color:var(--brand);font-size:17px}.top .t small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}
+.top .sp{flex:1}.top select{border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#fff}
+.demo{background:var(--gold-bg);color:#6B5212;text-align:center;font-size:12px;padding:6px 10px}
+.tabs{display:flex;gap:4px;padding:10px 16px 0;overflow-x:auto}
+.tabs button{border:0;background:none;padding:9px 14px;border-radius:10px 10px 0 0;color:var(--mut);font-weight:700;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:#fff;color:var(--brand);box-shadow:0 -2px 0 var(--red) inset}
+.wrap{padding:14px 16px 40px;max-width:1200px;margin:0 auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}.kpi .l{font-size:12px;color:var(--mut)}.kpi .v{font-size:26px;font-weight:800;color:var(--brand);line-height:1.2}.kpi .s{font-size:11.5px;color:var(--mut)}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;overflow-x:auto}.box h3{margin:0 0 8px;font-size:15px;color:var(--brand)}
+table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top;font-size:13px}th{background:#EEF1F7;color:#33405C;font-weight:700;white-space:nowrap}
+td.n,th.n{text-align:center}tr.click{cursor:pointer}tr.click:hover td{background:#F7F9FC}tr.reg td{background:#F3F5FA;font-weight:800;color:var(--brand)}
+.chip{display:inline-block;min-width:26px;text-align:center;border-radius:7px;padding:2px 5px;font-size:12px;font-weight:700}
+.c-ok{background:var(--ok-bg);color:var(--ok)}.c-no{background:#eef0f4;color:#a9b0bf}.c-off{background:var(--no-bg);color:var(--no)}.c-late{background:var(--late-bg);color:var(--late)}
+.badge{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}.b-late{background:var(--late-bg);color:var(--late)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}.filters select{border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#fff}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.rec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.rec .h{font-weight:800}.rec .m{font-size:12px;color:var(--mut)}.rec .d{font-size:13px;margin-top:4px}.rec .p{font-size:12.5px;color:var(--no);margin-top:2px}
+.rec .ph{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.rec .ph img{width:92px;height:69px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:50}.ov img{max-width:92vw;max-height:88vh;border-radius:10px}
+.wk table{table-layout:fixed}.wk th,.wk td{border:1px solid #333;font-size:12px}.wk .pics img{width:31%;margin:1%;border-radius:2px}
+.empty{text-align:center;color:var(--mut);padding:30px 10px}
+@media print{.top,.tabs,.demo,.filters{display:none!important}.box{border:0}}
+</style></head><body>
+<div class="top">
+  <img src="kosin-logo.jpg" alt="KOSIN">
+  <div class="t">Dashboard รายงานผู้แทน<small>การส่งรายงาน · อ่านรายงาน · รายงานรายสัปดาห์</small></div>
+  <div class="sp"></div><select id="selMonth"></select>
+</div>
+<div class="demo" id="demoBar"></div>
+<div class="tabs" id="tabs"><button data-t="ov" class="on">📊 ภาพรวม</button><button data-t="rp">📝 รายงานทั้งหมด</button><button data-t="wk">📄 รายงานรายสัปดาห์</button></div>
+<div class="wrap" id="view"></div>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="zone.js"></script>
+<script>
+/* ===== Dashboard รายงานผู้แทน — ดูอย่างเดียว ไม่มีรหัส · เริ่มว่าง (ข้อมูลตัวอย่างเปิดเองได้) ===== */
+const SKEY='kosin_dash_sample';
+const REGS=["กทม.","ภาคกลาง-ภาคตะวันออก","ภาคอีสาน","ภาคเหนือ","ภาคใต้"];
+const DOW=['อา','จ','อ','พ','พฤ','ศ','ส'],DOWF=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'],MON=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],
+  MONF=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),kd=k=>new Date(k+'T00:00:00');
+const addD=(k,n)=>{const d=kd(k);d.setDate(d.getDate()+n);return dk(d);},monOf=k=>{const d=kd(k);d.setDate(d.getDate()-((d.getDay()+6)%7));return dk(d);};
+const thD=k=>{const d=kd(k);return DOW[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()];};
+const TODAY=dk(new Date());
+const REPS=(window.SALES||[]);
+function photo(label,hue){const svg='<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl('+hue+',45%,72%)"/><stop offset="1" stop-color="hsl('+((hue+40)%360)+',40%,90%)"/></linearGradient></defs><rect width="240" height="180" fill="url(#g)"/><text x="120" y="98" font-family="Tahoma" font-size="20" text-anchor="middle" fill="rgba(0,0,0,.55)">'+label+'</text></svg>';return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}
+let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;},pick=a=>a[Math.floor(rnd()*a.length)];
+const WHAT=['แนะนำสินค้า ชุดกล้อง ENT','ติดตามใบเสนอราคา','เข้าเคส LAP','เยี่ยมลูกค้าเก่า','ออกบูธวิชาการ','ส่งเอกสารเปิดซอง','Present Duolith กับแพทย์','ติดตามงบประมาณปี 70'];
+const DET=['พบหัวหน้าพยาบาลห้องผ่าตัด สนใจกล้อง 4K','แพทย์ขอเดโมเพิ่มสัปดาห์หน้า','พัสดุแจ้งงบอนุมัติแล้ว รอประกาศ','คู่แข่ง Olympus เสนอราคาต่ำกว่า','นัดประชุมกรรมการ 3 พ.ย.','ส่งใบเสนอราคาแก้ไขรอบ 2'];
+const HELP=['','','','รอแพทย์ตัดสินใจ — นัดเข้าพบอีกครั้ง','งบไม่พอ — เสนอแบ่งงวด'];
+function buildDemo(){const recs=[],allH=Object.keys(window.ZONE_INFO||{}),start=dk(new Date(new Date().getFullYear(),new Date().getMonth()-1,1));
+  REPS.forEach((s,i)=>{const hs=((window.ZONE_SALES||{})[s.nick]||[]).length?window.ZONE_SALES[s.nick]:allH.slice(i*25,i*25+25);
+    for(let k=start;k<=TODAY;k=addD(k,1)){const d=kd(k).getDay();if(d===0||d===6||rnd()<.15)continue;
+      const n=rnd()<.4?2:1;for(let p=0;p<n;p++){const hue=Math.floor(rnd()*360),np=1+Math.floor(rnd()*3);
+        recs.push({rep:s.nick,full:s.full,region:s.region,workDate:k,hospital:pick(hs),what:pick(WHAT),detail:pick(DET),help:pick(HELP),
+          photos:Array.from({length:np},(_,q)=>photo('รูป '+(q+1),hue+q*30)),lateDays:rnd()<.12?1+Math.floor(rnd()*4):0});}}});
+  return recs;}
+function sampleOn(){try{return localStorage.getItem(SKEY)==='1'}catch(e){return false}}
+let RECS=sampleOn()?buildDemo():[],tab='ov',month=TODAY.slice(0,7),fRep='',fReg='',wkRep=REPS[0]&&REPS[0].nick,wkStart=monOf(TODAY);
+const inMonth=r=>r.workDate.slice(0,7)===month,repOf=n=>REPS.find(s=>s.nick===n)||{nick:n,full:n};
+const late=r=>r.lateDays?'<span class="badge b-late">ส่งสาย '+r.lateDays+' วัน</span>':'';
+function repOpts(sel,all){return (all?'<option value="">ผู้แทนทุกคน</option>':'')+REGS.map(g=>'<optgroup label="'+g+'">'+REPS.filter(s=>s.region===g).map(s=>'<option value="'+esc(s.nick)+'"'+(s.nick===sel?' selected':'')+'>'+esc(s.nick)+' — '+esc(s.full)+'</option>').join('')+'</optgroup>').join('');}
+function vOverview(){
+  const m=RECS.filter(inMonth),reps=new Set(m.map(r=>r.rep)),hos=new Set(m.map(r=>r.hospital)),lt=m.filter(r=>r.lateDays).length,today=RECS.filter(r=>r.workDate===TODAY);
+  const ws=monOf(TODAY),days=Array.from({length:7},(_,i)=>addD(ws,i));
+  let h='<div class="cards"><div class="kpi"><div class="l">รายงานเดือนนี้</div><div class="v">'+m.length+'</div><div class="s">จากผู้แทน '+reps.size+' / '+REPS.length+' คน</div></div>'+
+    '<div class="kpi"><div class="l">โรงพยาบาลที่ไป</div><div class="v">'+hos.size+'</div><div class="s">ไม่นับซ้ำ (เดือนนี้)</div></div>'+
+    '<div class="kpi"><div class="l">ส่งวันนี้</div><div class="v">'+new Set(today.map(r=>r.rep)).size+'</div><div class="s">คน · '+today.length+' รายงาน</div></div>'+
+    '<div class="kpi"><div class="l">ส่งสาย (เขียนย้อนหลัง)</div><div class="v" style="color:var(--late)">'+lt+'</div><div class="s">รายงาน · เดือนนี้</div></div></div>';
+  h+='<div class="box"><h3>ส่งรายงานสัปดาห์นี้ ('+thD(days[0])+' – '+thD(days[6])+')</h3><table><tr><th>ผู้แทน</th>'+days.map(k=>'<th class="n">'+thD(k).split(' ').slice(0,2).join(' ')+'</th>').join('')+'<th class="n">เดือนนี้</th></tr>';
+  REGS.forEach(g=>{const list=REPS.filter(s=>s.region===g);if(!list.length)return;h+='<tr class="reg"><td colspan="9">'+g+' ('+list.length+' คน)</td></tr>';
+    list.forEach(s=>{h+='<tr class="click" data-rep="'+esc(s.nick)+'"><td><b>'+esc(s.nick)+'</b> <span style="color:var(--mut);font-size:12px">'+esc(s.full)+'</span></td>'+days.map(k=>{const it=RECS.filter(r=>r.rep===s.nick&&r.workDate===k),dd=kd(k).getDay();
+        if(k>TODAY)return '<td class="n"></td>';if(it.length)return '<td class="n"><span class="chip '+(it.some(r=>r.lateDays)?'c-late':'c-ok')+'">'+it.length+'</span></td>';
+        return '<td class="n">'+(dd===0||dd===6?'<span class="chip c-no">หยุด</span>':'<span class="chip c-off">–</span>')+'</td>';}).join('')+'<td class="n">'+(RECS.filter(r=>r.rep===s.nick&&inMonth(r)).length||'')+'</td></tr>';});});
+  h+='</table><div style="font-size:11.5px;color:var(--mut);margin-top:6px">ตัวเลข = จำนวนรายงาน · <span class="chip c-late">2</span> = มีส่งสาย · – = ไม่มีรายงาน · แตะชื่อเพื่ออ่านรายงานของคนนั้น</div></div>';
+  $('#view').innerHTML=h;
+  document.querySelectorAll('[data-rep]').forEach(tr=>tr.onclick=()=>{fRep=tr.dataset.rep;go('rp');});
+}
+function vReports(){
+  let list=RECS.filter(inMonth).filter(r=>!fRep||r.rep===fRep).filter(r=>!fReg||r.region===fReg).sort((a,b)=>a.workDate<b.workDate?1:a.workDate>b.workDate?-1:(a.rep<b.rep?-1:1));
+  let h='<div class="filters"><select id="fReg"><option value="">ทุกภาค</option>'+REGS.map(g=>'<option'+(g===fReg?' selected':'')+'>'+g+'</option>').join('')+'</select><select id="fRep">'+repOpts(fRep,true)+'</select><span style="color:var(--mut);font-size:12px">'+list.length+' รายงาน</span></div>';
+  list.slice(0,150).forEach(r=>{h+='<div class="rec"><div class="h">📍 '+esc(r.hospital)+' '+late(r)+'</div><div class="m">'+thD(r.workDate)+' · <b>'+esc(r.rep)+'</b> '+esc(r.full)+' · '+esc(r.region)+'</div>'+
+    '<div class="d"><b>ทำอะไร:</b> '+esc(r.what)+'</div>'+(r.detail?'<div class="d" style="color:#555">'+esc(r.detail)+'</div>':'')+(r.help?'<div class="p">⚠ '+esc(r.help)+'</div>':'')+
+    '<div class="ph">'+r.photos.map(p=>'<img loading="lazy" referrerpolicy="no-referrer" src="'+p+'">').join('')+'</div></div>';});
+  if(list.length>150)h+='<div class="empty">แสดง 150 รายการแรก — เลือกผู้แทนเพื่อดูเฉพาะคน</div>';
+  if(!list.length)h+='<div class="box empty">ยังไม่มีรายงาน</div>';
+  $('#view').innerHTML=h;
+  $('#fRep').onchange=e=>{fRep=e.target.value;vReports();};$('#fReg').onchange=e=>{fReg=e.target.value;vReports();};
+  document.querySelectorAll('.rec .ph img').forEach(im=>im.onclick=()=>{const o=document.createElement('div');o.className='ov';o.innerHTML='<img src="'+im.src+'">';o.onclick=()=>o.remove();document.body.appendChild(o);});
+}
+function vWeek(){
+  const days=Array.from({length:7},(_,i)=>addD(wkStart,i)),s=repOf(wkRep);
+  let h='<div class="filters"><select id="wRep">'+repOpts(wkRep,false)+'</select><button class="btn" id="wPrev">◀</button><b>'+thD(days[0])+' – '+thD(days[6])+'</b><button class="btn" id="wNext">▶</button><button class="btn pri" onclick="window.print()">⬇ PDF / พิมพ์</button></div>';
+  h+='<div class="box wk"><div style="font-weight:800;margin-bottom:8px">รายงานการทำงานสัปดาห์ ('+thD(days[0])+' – '+thD(days[6])+') ชื่อผู้ปฏิบัติงาน <u>'+esc(s.full)+'</u></div><table><tr><th style="width:9%">ประจำวัน</th><th style="width:13%">ไปที่ไหน</th><th style="width:15%">ทำอะไร</th><th style="width:18%">รายละเอียด</th><th style="width:14%">ปัญหาและแนวทางแก้ไข</th><th>ภาพประกอบ</th></tr>';
+  days.forEach(k=>{const it=RECS.filter(r=>r.rep===wkRep&&r.workDate===k),dn='วัน'+DOWF[kd(k).getDay()]+'ที่<br>'+thD(k).split(' ').slice(1).join(' ');
+    if(!it.length){h+='<tr><td>'+dn+'</td><td colspan="5" style="text-align:center;color:#888">'+([0,6].indexOf(kd(k).getDay())>=0?'หยุด':'-')+'</td></tr>';return;}
+    const g={},o=[];it.forEach(r=>{if(!g[r.hospital]){g[r.hospital]=[];o.push(r.hospital);}g[r.hospital].push(r);});
+    o.forEach((hn,gi)=>{const x=g[hn];h+='<tr>'+(gi?'':'<td rowspan="'+o.length+'">'+dn+(it.some(r=>r.lateDays)?'<div><span class="badge b-late" style="font-size:10px">สาย</span></div>':'')+'</td>')+'<td><b>'+esc(hn)+'</b></td><td>'+x.map(r=>esc(r.what)).join('<br>')+'</td><td>'+(x.map(r=>esc(r.detail)).filter(Boolean).join('<br>')||'-')+'</td><td>'+(x.map(r=>esc(r.help)).filter(Boolean).join('<br>')||'-')+'</td><td class="pics">'+x.reduce((a,r)=>a.concat(r.photos),[]).map(p=>'<img loading="lazy" referrerpolicy="no-referrer" src="'+p+'">').join('')+'</td></tr>';});});
+  $('#view').innerHTML=h+'</table></div>';
+  $('#wRep').onchange=e=>{wkRep=e.target.value;vWeek();};$('#wPrev').onclick=()=>{wkStart=addD(wkStart,-7);vWeek();};$('#wNext').onclick=()=>{wkStart=addD(wkStart,7);vWeek();};
+}
+function go(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));({ov:vOverview,rp:vReports,wk:vWeek})[t]();window.scrollTo(0,0);}
+function months(){const s=$('#selMonth');const ms=[...new Set(RECS.map(r=>r.workDate.slice(0,7)).concat([TODAY.slice(0,7)]))].sort().reverse();
+  s.innerHTML=ms.map(m=>'<option value="'+m+'">'+MONF[+m.slice(5)-1]+' '+(+m.slice(0,4)+543)+'</option>').join('');s.value=month;s.onchange=()=>{month=s.value;go(tab);};}
+const SYNC_URL=(window.APP_CONFIG&&window.APP_CONFIG.SYNC_URL)||'';let LIVE=false,liveAt=null;
+function loadLive(){if(!SYNC_URL||sampleOn())return;LIVE=false;demoBar();const n=new Date(),from=dk(new Date(n.getFullYear(),n.getMonth()-5,1));
+  fetch(SYNC_URL+'?op=list&app=sales&from='+from).then(r=>r.json()).then(j=>{if(!j||!j.ok)throw 0;if(sampleOn())return;RECS=j.list.map(o=>({id:o.id,rep:o.nick,full:o.name||repOf(o.nick).full,region:repOf(o.nick).region||o.region||'',workDate:o.workDate,hospital:o.hospital,what:o.what||'',detail:o.detail||'',help:o.help||'',photos:o.photos||[],lateDays:+o.lateDays||0}));LIVE=true;liveAt=new Date();months();demoBar();go(tab);})
+  .catch(()=>{$('#demoBar').innerHTML='⚠️ โหลดรายงานไม่สำเร็จ (เน็ต/ระบบ) · <a href="#" onclick="loadLive();return false">ลองใหม่</a>';});}
+const liveBar=()=>LIVE?'🟢 รายงานจริงจากแอปผู้แทน '+RECS.length+' รายการ · อัปเดต '+String(liveAt.getHours()).padStart(2,'0')+':'+String(liveAt.getMinutes()).padStart(2,'0')+' · <a href="#" onclick="loadLive();return false">โหลดใหม่</a> · <a href="#" id="sampleOn">ดูข้อมูลตัวอย่าง</a>'
+  :'⏳ กำลังโหลดรายงานจากแอปผู้แทน...';
+function demoBar(){const on=sampleOn();$('#demoBar').innerHTML=on?'🧪 กำลังดู<b>ข้อมูลตัวอย่าง</b> (สมมติ) · <a href="#" id="sOff">ปิดข้อมูลตัวอย่าง</a>':SYNC_URL?liveBar().replace('id="sampleOn"','id="sOn"'):'📭 ยังไม่มีรายงาน — เมื่อต่อระบบจริง รายงานจากแอปผู้แทนจะขึ้นที่นี่ · <a href="#" id="sOn">ดูข้อมูลตัวอย่าง</a>';
+  const a=$('#sOn'),b=$('#sOff');if(a)a.onclick=e=>{e.preventDefault();try{localStorage.setItem(SKEY,'1')}catch(x){}seed=11;RECS=buildDemo();months();demoBar();go(tab);};
+  if(b)b.onclick=e=>{e.preventDefault();try{localStorage.removeItem(SKEY)}catch(x){}RECS=[];months();demoBar();go(tab);loadLive();};}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+months();demoBar();go('ov');loadLive();
+</script>
+</body></html>
