@@ -557,8 +557,7 @@ function checkDate(){
   var picked=new Date(fDate.value+'T00:00:00'), now=new Date(); now.setHours(0,0,0,0);
   var diff=Math.round((now-picked)/86400000);
   var lim=CFG.BACKDATE_DAYS||7;
-  if(diff>lim){ w.textContent='⚠️ เกิน '+lim+' วัน — ระบบจะไม่นับว่าส่งในวันที่นี้ (แต่ยังบันทึกได้)'; w.classList.remove('hidden'); }
-  else w.classList.add('hidden');
+  w.classList.add('hidden');   // เขียนย้อนหลังได้ ไม่ขึ้นข้อความ · ระบบจดจำนวนวันที่สายไว้ (lateDays) ให้ Dashboard
 }
 
 // ---------- ช่วงเวลาทำงาน (เช้า/บ่าย/ทั้งวัน — คำนวณเงินหลังบ้าน) ----------
@@ -775,6 +774,7 @@ function submitOne(silent){
     nick:me.nick, name:me.full, email:me.email, region:me.region,
     workZone:me.work||'', homeZone:(me.home||[]).join(' / '),
     workDate:fDate.value, hospital:hname,
+    lateDays:Math.max(0,Math.round((new Date(todayStr()+'T00:00:00')-new Date(fDate.value+'T00:00:00'))/86400000)),
     zoneType:isOwnHos(hname)?'ในเขต':'เขตอื่น',
     jobTypes:jobsText,
     what:document.getElementById('fWhat').value.trim(),
@@ -1051,7 +1051,7 @@ function loadMy(){ try{ return JSON.parse(localStorage.getItem(MY_KEY)||'[]'); }
 function myReports(){ return loadMy().filter(function(r){ return r.nick===me.nick; }); }
 function saveMyReport(p,thumbs){
   var all=loadMy(), lite={};
-  ['ts','nick','name','workDate','hospital','zoneType','what','detail','jobTypes','product','budget','competitor','help','forecast','softTarget','period','note','extra','flags'].forEach(function(k){ lite[k]=p[k]; });
+  ['ts','nick','name','workDate','lateDays','hospital','zoneType','what','detail','jobTypes','product','budget','competitor','help','forecast','softTarget','period','note','extra','flags'].forEach(function(k){ lite[k]=p[k]; });
   lite.photoCount=thumbs.length; lite.thumbs=thumbs; lite.id=Date.now()+'_'+Math.random().toString(36).slice(2,7);
   all.push(lite);
   // กันเครื่องเต็ม: รูปย่อเก็บไว้แค่ KEEP_THUMB_DAYS วัน (ข้อความเก็บต่อ)
