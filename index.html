@@ -482,6 +482,31 @@ function isOwnHos(h){ return (HOSP[me.nick]||[]).indexOf(h)>-1; }
 // รายชื่อ รพ. ที่ช่วยแนะนำ: มีเขต = เฉพาะเขตตัวเอง · ยังไม่มีเขต (เช่น น้องทดลองงาน) = ทุก รพ.
 function myHosp(){ var own=HOSP[me.nick]||[]; return own.length?own:ALL_HOSP.slice().sort(new Intl.Collator('th').compare); }
 // จับคร่าวๆ: ไม่สน "โรงพยาบาล/รพ." ช่องว่าง จุด วงเล็บ
+/* ===== เดาชื่อ รพ. ขณะพิมพ์ — ทุก รพ. (เขตตัวเองขึ้นก่อน) · พิมพ์คร่าวๆ/กลางคำก็เจอ ===== */
+function hnorm(x){ return String(x||'').replace(/โรงพยาบาล|ร\.?พ\.?|คลีนิก|คลินิก|คลีนิค|คลินิค|[\s.()\-]/g,''); }
+function hosRank(q,own,all,max){
+  var n=hnorm(q),seen={},res=[]; if(!n) return own.slice(0,max||12);
+  [own,all].forEach(function(L){ var s=[],c=[]; L.forEach(function(h){ if(seen[h]) return; var k=hnorm(h); if(k.indexOf(n)===0) s.push(h); else if(k.indexOf(n)>0) c.push(h); });
+    s.concat(c).forEach(function(h){ if(!seen[h]){ seen[h]=1; res.push(h); } }); });
+  return res.slice(0,max||12);
+}
+function hosSuggest(inp,getOwn,getAll,onPick){
+  if(!inp||inp._hs) return; inp._hs=1; inp.removeAttribute('list'); inp.setAttribute('autocomplete','off');
+  var box=document.createElement('div');
+  box.style.cssText='display:none;background:#fff;border:1px solid #ddd3c6;border-radius:10px;margin-top:4px;max-height:240px;overflow:auto;box-shadow:0 8px 22px rgba(0,0,0,.12);position:relative;z-index:40';
+  inp.parentNode.insertBefore(box,inp.nextSibling);
+  var skip=0;
+  function draw(){ if(skip){skip=0;return;} var L=hosRank(inp.value,getOwn()||[],getAll()||[],12), q=inp.value.trim();
+    if(!L.length){ box.style.display='none'; return; }
+    box.innerHTML=L.map(function(h){ return '<div data-h="'+String(h).replace(/"/g,'&quot;')+'" style="padding:10px 12px;font-size:14px;border-bottom:1px solid #f0e9df;cursor:pointer">'+String(h).replace(/</g,'&lt;')+'</div>'; }).join('')
+      +(q&&L.indexOf(q)<0?'<div style="padding:8px 12px;font-size:12px;color:#999">ไม่มีในรายการ — พิมพ์ต่อได้เลย</div>':'');
+    box.style.display='block';
+    [].forEach.call(box.querySelectorAll('[data-h]'),function(d){ d.onmousedown=function(e){ e.preventDefault(); }; d.onclick=function(){ inp.value=d.getAttribute('data-h'); box.style.display='none'; skip=1; inp.dispatchEvent(new Event('input',{bubbles:true})); inp.dispatchEvent(new Event('change',{bubbles:true})); if(onPick) onPick(inp.value); }; });
+  }
+  inp.addEventListener('input',draw); inp.addEventListener('focus',draw);
+  inp.addEventListener('blur',function(){ setTimeout(function(){ box.style.display='none'; },200); });
+}
+function allHospSorted(){ return ALL_HOSP.slice().sort(new Intl.Collator('th').compare); }
 function hn(x){ return String(x||'').replace(/โรงพยาบาล|ร\.?พ\.?|คลีนิก|คลินิก|คลีนิค|คลินิค|[\s.()\-]/g,''); }
 function hosMatch(list,q){ var n=hn(q); if(!n) return list.filter(function(h){return h.indexOf(q)>-1;});
   var a=list.filter(function(h){return hn(h).indexOf(n)===0;}), b=list.filter(function(h){var k=hn(h);return k.indexOf(n)>0;});
@@ -493,7 +518,7 @@ function showHos(q){
   var list;
   if(!q){ list=own.slice(0,50); }
   else{
-    list=hosMatch(own,q).slice(0,60);   // มีเขต: เขตอื่นไม่ขึ้น ให้พิมพ์เอง
+    list=hosRank(q,own,allHospSorted(),60);   // ทุก รพ. — เขตตัวเองขึ้นก่อน (ไปช่วยงานเขตอื่นได้)
   }
   var html='';
   list.forEach(function(h){
@@ -1412,20 +1437,20 @@ function renderPlanWeek(){
   var fmt=function(d){var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()];};
   var h='<button class="wkbtn" style="width:auto;padding:8px 12px;margin-bottom:8px" id="backCal">‹ กลับปฏิทินเดือน</button>';
   h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button class="wkbtn" data-wnav="-1">◄</button><div style="flex:1;text-align:center"><div style="font-size:14px;font-weight:600">'+fmt(wsD)+' – '+fmt(wEnd)+'</div><div style="font-size:11px;color:var(--mut)">'+(ws===thisWs?'สัปดาห์นี้':(ws>thisWs?'สัปดาห์หน้า':'ผ่านมาแล้ว'))+'</div></div><button class="wkbtn" data-wnav="1">►</button></div>';
-  h+='<div class="plan-remind">✍️ พิมพ์แพลนเองได้เลย · ชื่อ รพ. ในเขตจะขึ้นให้เลือก · เซฟอัตโนมัติ</div>';
+  h+='<div class="plan-remind">✍️ พิมพ์แพลนเองได้เลย · พิมพ์ชื่อ รพ. คร่าวๆ มีให้เลือก · เซฟอัตโนมัติ</div>';
   h+='<datalist id="plHosList">'+myHosp().map(function(x){return '<option value="'+esc(x)+'">';}).join('')+'</datalist>';
   for(var i=0;i<7;i++){
     var dd=new Date(wsD); dd.setDate(dd.getDate()+i); var k=dkey(dd), di=isHoliday(k);
     h+='<div class="pday'+(di.off?' hol':'')+'"><div class="ph-d"><span class="wd">'+THAI_DOW[i]+' '+dd.getDate()+'</span>'+(di.off?'<span class="holtag">'+(di.why||'วันหยุด')+'</span>':'')+'</div>';
     var o=slotsOf(plan[k]);
     ['เช้า','บ่าย'].forEach(function(sl){ h+='<div class="pslot"><span>'+sl+'</span><textarea rows="1" data-pk="'+k+'" data-sl="'+sl+'" placeholder="'+(di.off?'หยุด':'พิมพ์แพลน / ชื่อ รพ.')+'">'+esc(o[sl]||'')+'</textarea></div>'; });
-    h+='<input class="phos" list="plHosList" data-pk="'+k+'" placeholder="🔎 ค้นชื่อ รพ. ในเขต แล้วเลือก → ใส่ให้ช่องเช้า (ว่างค่อยบ่าย)"></div>';
+    h+='<input class="phos" list="plHosList" data-pk="'+k+'" placeholder="🔎 ค้นชื่อ รพ. แล้วเลือก → ใส่ให้ช่องเช้า (ว่างค่อยบ่าย)"></div>';
   }
   h+=planDlButtons(ws,null,'แพลน อา '+fmt(wsD)+' – ส '+fmt(wEnd));
   document.getElementById('planBody').innerHTML=h;
   document.getElementById('backCal').onclick=function(){planView='month';renderPlan();};
   [].forEach.call(document.querySelectorAll('#planBody textarea[data-pk]'),function(t){ var fit=function(){t.style.height='auto';t.style.height=t.scrollHeight+'px';}; fit(); t.oninput=fit; t.onchange=function(){ setPlanSlot(ws,t.dataset.pk,t.dataset.sl,t.value.trim()); }; });
-  [].forEach.call(document.querySelectorAll('#planBody input.phos'),function(inp){ inp.onchange=function(){ var v=inp.value.trim(); if(!v) return;
+  [].forEach.call(document.querySelectorAll('#planBody input.phos'),function(inp){ hosSuggest(inp,myHosp,allHospSorted); inp.onchange=function(){ var v=inp.value.trim(); if(!v) return;
     var ta=document.querySelector('#planBody textarea[data-pk="'+inp.dataset.pk+'"][data-sl="เช้า"]'); if(ta.value.trim()) ta=document.querySelector('#planBody textarea[data-pk="'+inp.dataset.pk+'"][data-sl="บ่าย"]');
     ta.value=ta.value.trim()?ta.value.trim()+'\n'+v:v; ta.onchange(); ta.oninput(); inp.value=''; }; });
   [].forEach.call(document.querySelectorAll('#planBody [data-wnav]'),function(b){b.onclick=function(){var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+7*parseInt(b.dataset.wnav));planSunday=dkey(d);renderPlan();};});
