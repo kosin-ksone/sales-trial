@@ -1097,6 +1097,29 @@ function dayRow(list){
   });
   return {where:where,what:what,detail:detail,prob:prob,thumbs:thumbs,count:count};
 }
+/* ===== สำรอง / กู้คืนข้อมูล (เปลี่ยนเครื่อง) — ไฟล์ .json เก็บรายงาน + แพลน ของเครื่องนี้ ===== */
+function backupData(){
+  var data={}; BK_KEYS.forEach(function(k){ var v=localStorage.getItem(k); if(v!=null) data[k]=v; });
+  var d=new Date(), ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var blob=new Blob([JSON.stringify({app:BK_APP,at:d.toISOString(),data:data})],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='สำรองรายงาน-'+BK_APP+'-'+bkName()+'-'+ds+'.json'; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },4000);
+}
+function restoreData(){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=function(){ var f=inp.files[0]; if(!f) return; var rd=new FileReader();
+    rd.onload=function(){ try{ var o=JSON.parse(rd.result);
+        if(!o||o.app!==BK_APP||!o.data){ alert('ไฟล์นี้ไม่ใช่ไฟล์สำรองของแอปนี้'); return; }
+        if(!confirm('กู้คืนข้อมูลจากไฟล์สำรอง (บันทึกเมื่อ '+new Date(o.at).toLocaleString('th-TH')+')?\nข้อมูลรายงาน/แพลนในเครื่องนี้จะถูกแทนที่ด้วยข้อมูลในไฟล์')) return;
+        Object.keys(o.data).forEach(function(k){ if(BK_KEYS.indexOf(k)>-1) localStorage.setItem(k,o.data[k]); });
+        alert('กู้คืนเรียบร้อย'); location.reload();
+      }catch(e){ alert('อ่านไฟล์ไม่ได้: '+e.message); } };
+    rd.readAsText(f); };
+  inp.click();
+}
+function bkRow(){ return '<div style="display:flex;gap:8px;margin:10px 0 0"><button type="button" onclick="backupData()" style="flex:1;padding:11px;border-radius:10px;border:1.5px dashed var(--gold);background:#fff;font:inherit;font-weight:700;cursor:pointer">💾 สำรองข้อมูล</button><button type="button" onclick="restoreData()" style="flex:1;padding:11px;border-radius:10px;border:1.5px dashed var(--gold);background:#fff;font:inherit;font-weight:700;cursor:pointer">♻️ กู้คืนข้อมูล</button></div>'; }
+var BK_APP='sales', BK_KEYS=['kosintrial_sales_reports','kosintrial_sales_plans','kosintrial_sales_trainees','kosintrial_sales_me'];
+function bkName(){ try{ return (me&&me.full)||'เซล'; }catch(e){ return ''; } }
 function renderMine(){
   ensureIds();
   if(!mineWeek) mineWeek=mondayStart(todayStr());
@@ -1131,7 +1154,7 @@ function renderMine(){
   }
   h+='<div class="btnrow"><button class="send ghost" onclick="printWeeks([mineWeek],\'week\')">'+IC.dl+'PDF · สัปดาห์นี้</button><button class="send ghost" onclick="printMonth()">'+IC.dl+'PDF · ทั้งเดือน</button></div>'
     +'<div class="btnrow"><button class="send ghost" onclick="xlWeek()">📊 Excel · สัปดาห์นี้</button><button class="send ghost" onclick="xlMonth()">📊 Excel · ทั้งเดือน</button></div>';
-  h+='<div style="background:var(--amber-bg);color:var(--amber);border-radius:10px;padding:9px 12px;font-size:12px;line-height:1.55;margin:8px 0 4px"><b>⚠️ รายงานเก็บอยู่ในเครื่องนี้เท่านั้น</b> — แอปไม่ได้ส่งให้ใคร<br>• โหลด PDF/Excel แล้ว<b>ส่งเมลจากเมลของตัวเอง ทุกสัปดาห์</b><br>• รูปในแอปเก็บแค่ <b>15 วัน</b> — โหลดก่อนรูปหาย<br>• เก็บไฟล์ที่โหลดไว้ในเครื่อง/อีเมลของตัวเองด้วย</div>';
+  h+=bkRow()+'<div style="background:var(--amber-bg);color:var(--amber);border-radius:10px;padding:9px 12px;font-size:12px;line-height:1.55;margin:8px 0 4px"><b>⚠️ รายงานเก็บอยู่ในเครื่องนี้เท่านั้น</b> — แอปไม่ได้ส่งให้ใคร<br>• โหลด PDF/Excel แล้ว<b>ส่งเมลจากเมลของตัวเอง ทุกสัปดาห์</b><br>• รูปในแอปเก็บแค่ <b>15 วัน</b> — โหลดก่อนรูปหาย<br>• เก็บไฟล์ที่โหลดไว้ในเครื่อง/อีเมลของตัวเองด้วย<br>• <b>เปลี่ยนเครื่อง:</b> กด 💾 สำรองข้อมูล → เครื่องใหม่กด ♻️ กู้คืนข้อมูล</div>';
   document.getElementById('mineBody').innerHTML=h;
 }
 /* ===== แก้ไข / ลบ รายงานที่บันทึกแล้ว (ในเครื่องนี้) ===== */
